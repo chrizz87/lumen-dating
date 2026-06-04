@@ -1,0 +1,2204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Lumen — Dating, designed by you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF6F0;
+    --bg-2:#F3EDE3;
+    --ink:#16130F;
+    --ink-soft:#3A332B;
+    --muted:#8B8278;
+    --line:#E8DFD2;
+    --line-strong:#D7CBB7;
+    --accent:#E94B4B;
+    --accent-ink:#B33232;
+    --gold:#C8A157;
+    --green:#5C7C5A;
+    --white:#FFFEFB;
+    --shadow-soft: 0 1px 2px rgba(22,19,15,0.04), 0 8px 24px rgba(22,19,15,0.06);
+    --shadow-card: 0 1px 2px rgba(22,19,15,0.06), 0 12px 32px rgba(22,19,15,0.10);
+    --shadow-pop:  0 4px 12px rgba(22,19,15,0.08), 0 24px 64px rgba(22,19,15,0.18);
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0; padding:0; height:100%;}
+  body{
+    background: radial-gradient(120% 80% at 50% 0%, #F8F1E4 0%, var(--bg) 60%, #EFE7D8 100%);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing: antialiased;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* ===== Diagnostic indicators (always on top of EVERYTHING) ===== */
+  #js-status{
+    position:fixed; top:8px; right:8px; z-index: 99999;
+    background:#9aa39a; color:#fff;
+    font-family:'Inter', sans-serif; font-size:10px; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase;
+    padding:4px 8px; border-radius: 999px;
+    pointer-events:none;
+    transition: background .25s;
+  }
+  #js-status.ok{ background:#3a8c4c;}
+  #err-banner{
+    position:fixed; top:0; left:0; right:0; z-index: 99998;
+    background:#b33232; color:#fff;
+    font-family:'Inter', sans-serif; font-size:12px; line-height:1.4;
+    padding:10px 14px;
+    display:none;
+    white-space: pre-wrap; word-break: break-word;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  #err-banner.on{ display:block;}
+  #err-banner strong{ font-weight:700; letter-spacing:0.04em;}
+
+  /* ----- App frame ----- */
+  .app{
+    width:100%;
+    max-width:430px;
+    height:100dvh;
+    max-height:932px;
+    background: var(--bg);
+    position:relative;
+    overflow:hidden;
+    box-shadow: var(--shadow-pop);
+    border-radius: 0;
+  }
+  @media (min-width: 480px){
+    body{padding:24px 0;}
+    .app{
+      height:calc(100dvh - 48px);
+      border-radius: 44px;
+      border:1px solid var(--line);
+    }
+  }
+
+  /* ----- Screen system ----- */
+  .screen{
+    position:absolute; inset:0;
+    display:none;
+    flex-direction:column;
+    opacity:0;
+    transform: translateY(8px);
+    transition: opacity .35s cubic-bezier(.22,1,.36,1), transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  .screen.active{
+    display:flex;
+    opacity:1;
+    transform: translateY(0);
+  }
+
+  /* ----- Typography ----- */
+  .serif{font-family:'Fraunces', Georgia, serif; font-weight:500; letter-spacing:-0.02em;}
+  h1,h2,h3{margin:0; font-family:'Fraunces', Georgia, serif; font-weight:500; letter-spacing:-0.025em; color:var(--ink);}
+  h1{font-size:38px; line-height:1.05;}
+  h2{font-size:28px; line-height:1.1;}
+  h3{font-size:20px; line-height:1.2;}
+  p{margin:0;}
+  .eyebrow{
+    font-family:'Inter', sans-serif; font-weight:600;
+    font-size:11px; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--muted);
+  }
+  .muted{color:var(--muted);}
+
+  /* ----- Buttons ----- */
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    font-family:'Inter', sans-serif; font-weight:600;
+    border-radius: 999px;
+    padding: 16px 24px;
+    font-size:15px;
+    letter-spacing:0.01em;
+    transition: transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s, background .2s;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn:active{ transform: scale(.97); }
+  .btn-primary{ background: var(--ink); color:#FAF6F0; box-shadow: 0 4px 16px rgba(22,19,15,0.22);}
+  .btn-primary:hover{ background:#000;}
+  .btn-secondary{ background: transparent; color:var(--ink); border:1px solid var(--line-strong);}
+  .btn-ghost{ background: transparent; color:var(--ink); padding: 12px 16px;}
+  .btn-block{ width:100%;}
+  .btn-sm{ padding: 10px 16px; font-size:13px;}
+
+  .cta-dock{
+    position: sticky;
+    bottom: 0;
+    padding: 12px 24px calc(24px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(250,246,240,0) 0%, var(--bg) 36%);
+  }
+
+  /* ============================================================== */
+  /* SCREEN 1 — Splash                                                */
+  /* ============================================================== */
+  #splash{
+    background: radial-gradient(140% 100% at 50% 20%, #F8EFE0 0%, var(--bg) 50%, #EBE1D0 100%);
+    align-items:center; justify-content:space-between;
+    padding: 64px 32px 32px;
+    text-align:center;
+  }
+  .splash-mark{
+    width:72px; height:72px; border-radius:24px;
+    background: linear-gradient(135deg, var(--ink) 0%, #2A241D 100%);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--bg); font-family:'Fraunces', serif; font-weight:500; font-size:36px;
+    box-shadow: var(--shadow-card);
+    margin-top: 8px;
+  }
+  .splash-hero{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 0 8px;
+  }
+  .splash-hero h1{ font-size:46px; line-height:1.0; margin-bottom:16px;}
+  .splash-hero h1 em{font-style:italic; color:var(--accent-ink); font-weight:500;}
+  .splash-hero p{ color:var(--ink-soft); font-size:16px; max-width:300px; line-height:1.5;}
+  .splash-dots{display:flex; gap:6px; margin: 20px 0 28px;}
+  .splash-dots span{ width:5px; height:5px; border-radius:50%; background: var(--line-strong);}
+  .splash-dots span:nth-child(2){background: var(--accent);}
+
+  /* ============================================================== */
+  /* SCREEN 2 — Prompt onboarding                                    */
+  /* ============================================================== */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 20px 24px 8px;
+  }
+  .topbar .step{ display:flex; align-items:center; gap:6px;}
+  .topbar .step .pip{
+    width:24px; height:3px; border-radius:2px; background:var(--line-strong);
+    transition: background .3s;
+  }
+  .topbar .step .pip.on{ background: var(--ink);}
+  .back-btn{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+    background: var(--white); display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+
+  .content{
+    flex:1; overflow-y:auto;
+    padding: 8px 24px 0;
+    scrollbar-width: none;
+  }
+  .content::-webkit-scrollbar{ display:none;}
+
+  .lead-block{ padding: 24px 0 28px;}
+  .lead-block .eyebrow{margin-bottom:14px;}
+  .lead-block h1{ font-size:36px; line-height:1.06; margin-bottom:14px;}
+  .lead-block h1 em{ font-style:italic; color:var(--accent-ink); font-weight:500;}
+  .lead-block p{ color:var(--ink-soft); font-size:15px; max-width:340px;}
+
+  .prompt-input{
+    background: var(--white);
+    border:1px solid var(--line);
+    border-radius: 22px;
+    padding: 18px 18px 12px;
+    box-shadow: var(--shadow-soft);
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .prompt-input:focus-within{
+    border-color: var(--ink);
+    box-shadow: 0 0 0 4px rgba(22,19,15,0.05), var(--shadow-soft);
+  }
+  .prompt-input textarea{
+    width:100%; border:none; outline:none; resize:none;
+    background:transparent;
+    font-family:'Fraunces', Georgia, serif;
+    font-size:19px; line-height:1.4; color:var(--ink);
+    min-height: 140px;
+    letter-spacing:-0.005em;
+  }
+  .prompt-input textarea::placeholder{color:var(--muted); font-style:italic;}
+  .prompt-foot{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top: 8px;
+    font-size:12px; color:var(--muted);
+  }
+
+  .suggestion-list{ display:flex; flex-direction:column; gap:8px; margin: 10px 0 4px;}
+  .suggestion{
+    text-align:left; cursor:pointer;
+    background: var(--white);
+    border:1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px 14px;
+    font-family:'Fraunces', serif;
+    font-size: 15px;
+    color: var(--ink-soft);
+    font-style: italic;
+    transition: border-color .2s, transform .15s, color .2s, background .2s;
+    display:flex; align-items:center; gap:10px;
+  }
+  .suggestion::before{ content:""; width:6px; height:6px; border-radius:50%; background: var(--accent); flex-shrink:0;}
+  .suggestion:hover{ border-color: var(--ink); color: var(--ink);}
+  .suggestion:active{ transform: scale(.99);}
+
+  .chip-row{
+    display:flex; gap:8px; flex-wrap:wrap;
+    margin: 18px 0 4px;
+  }
+  .chip{
+    border:1px solid var(--line-strong);
+    background: transparent;
+    padding: 9px 14px;
+    border-radius: 999px;
+    font-size:13px; font-weight:500;
+    color: var(--ink-soft);
+    cursor:pointer;
+    transition: background .2s, border-color .2s, color .2s, transform .2s;
+  }
+  .chip:hover{ border-color: var(--ink);}
+  .chip:active{ transform: scale(.97);}
+  .chip.is-selected{ background: var(--ink); color:var(--bg); border-color:var(--ink);}
+
+  /* ============================================================== */
+  /* SCREEN 3 — Profile setup                                         */
+  /* ============================================================== */
+  .photo-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 8px 0 24px;
+  }
+  .photo-slot{
+    aspect-ratio: 3/4;
+    border-radius: 18px;
+    border:1.5px dashed var(--line-strong);
+    background: var(--white);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--muted);
+    position:relative;
+    cursor:pointer;
+    overflow:hidden;
+    transition: border-color .25s, background .25s, transform .2s;
+  }
+  .photo-slot:hover{ border-color: var(--ink); }
+  .photo-slot:active{ transform: scale(.98);}
+  .photo-slot.filled{ border: none;}
+  .photo-slot .plus{
+    width:28px; height:28px; border-radius:50%;
+    background: var(--bg-2);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--ink); font-size:18px; font-weight:500;
+  }
+  .photo-slot .corner-num{
+    position:absolute; top:8px; left:8px;
+    width:22px; height:22px; border-radius:50%;
+    background: rgba(22,19,15,0.62);
+    color: var(--bg); font-size:11px; font-weight:600;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter: blur(6px);
+    z-index: 5;
+    pointer-events: none;
+  }
+  .photo-slot img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2;
+    opacity:0; transition:opacity .35s;
+    pointer-events: none;
+  }
+  .photo-slot img.loaded{ opacity:1;}
+  .photo-slot .slot-fallback{
+    position:absolute; inset:0; z-index:1;
+    display:flex; align-items:flex-end; padding:10px;
+    pointer-events: none;
+  }
+  .photo-slot .slot-fallback span{
+    font-family:'Fraunces', serif; font-style: italic;
+    color: rgba(255,255,255,0.92); font-size: 44px; line-height:1;
+  }
+
+  .field-card{
+    background: var(--white);
+    border:1px solid var(--line);
+    border-radius: 22px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .field-card label{
+    display:block;
+    font-size:11px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase;
+    color: var(--muted); margin-bottom:10px;
+  }
+  .field-card .value{
+    font-family:'Fraunces', serif;
+    font-size:22px; color:var(--ink); letter-spacing:-0.01em;
+  }
+  .field-card input[type=text]{
+    width:100%; border:none; outline:none; background:transparent;
+    font-family:'Fraunces', serif;
+    font-size:22px; color:var(--ink); letter-spacing:-0.01em;
+    padding: 0;
+  }
+  .field-card input::placeholder{ color: var(--line-strong); font-style:italic;}
+
+  .seg{
+    display:flex; gap:6px; padding:4px;
+    background: var(--bg-2);
+    border-radius: 14px;
+  }
+  .seg button{
+    flex:1; border:none; background:transparent; padding:10px 8px;
+    border-radius: 10px;
+    font-family:'Inter', sans-serif; font-weight:500; font-size:13px;
+    color: var(--ink-soft); cursor:pointer;
+    transition: background .2s, color .2s;
+  }
+  .seg button.on{ background: var(--white); color: var(--ink); box-shadow: 0 1px 2px rgba(22,19,15,.06);}
+
+  .slider-row{ display:flex; align-items:center; gap:14px;}
+  .slider-row input[type=range]{
+    flex:1; appearance:none; height:4px; background: var(--line); border-radius:4px;
+    outline:none;
+  }
+  .slider-row input[type=range]::-webkit-slider-thumb{
+    appearance:none; width:22px; height:22px; border-radius:50%;
+    background: var(--ink); cursor:pointer;
+    box-shadow: 0 2px 6px rgba(22,19,15,.18);
+  }
+  .slider-row .read{
+    font-family:'Fraunces', serif; font-size:20px; color:var(--ink);
+    min-width:64px; text-align:right; letter-spacing:-0.01em;
+  }
+
+  /* ============================================================== */
+  /* SCREEN 4 — Score reveal                                          */
+  /* ============================================================== */
+  #score{
+    background: radial-gradient(120% 70% at 50% 15%, #F6ECD8 0%, var(--bg) 55%, #EAE0CE 100%);
+    padding: 0;
+  }
+  .score-wrap{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 32px 28px;
+    text-align:center;
+  }
+  .score-ring{ width:200px; height:200px; position:relative; margin: 8px 0 20px;}
+  .score-ring svg{ width:100%; height:100%; transform: rotate(-90deg);}
+  .score-ring circle{ fill:none; stroke-width:6; stroke-linecap:round;}
+  .score-ring .track{ stroke: var(--line);}
+  .score-ring .arc{
+    stroke: var(--ink);
+    stroke-dasharray: 565.48;
+    stroke-dashoffset: 565.48;
+    transition: stroke-dashoffset 1.6s cubic-bezier(.22,1,.36,1);
+  }
+  .score-center{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    pointer-events: none;
+  }
+  .score-center .big{
+    font-family:'Fraunces', serif; font-weight:500;
+    font-size:62px; line-height:1; letter-spacing:-0.04em;
+    color: var(--ink);
+  }
+  .score-center .out-of{ color: var(--muted); font-size:13px; margin-top:4px; letter-spacing:0.04em;}
+
+  .trait-row{
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+    margin: 14px 0 18px; max-width:340px;
+  }
+  .trait{
+    padding: 8px 14px; border-radius: 999px;
+    background: var(--white);
+    border:1px solid var(--line);
+    font-size:13px; font-weight:500; color: var(--ink);
+  }
+  .trait .dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background: var(--accent); margin-right:8px; transform: translateY(-1px);}
+
+  .score-foot{
+    color: var(--ink-soft); font-size:14px;
+    max-width: 320px; text-align:center; line-height:1.55;
+  }
+
+  /* ============================================================== */
+  /* MAIN APP (tabs)                                                  */
+  /* ============================================================== */
+  #main{ padding: 0;}
+  .tab-view{
+    display:none;
+    flex-direction:column;
+    flex:1;
+    min-height: 0;
+  }
+  .tab-view.active{ display:flex;}
+
+  .feed-header{
+    padding: 20px 24px 14px;
+    display:flex; align-items:flex-end; justify-content:space-between;
+    background: linear-gradient(180deg, var(--bg) 75%, rgba(250,246,240,0));
+    flex-shrink: 0;
+  }
+  .feed-header h2{ font-size:30px;}
+  .feed-header .filter-pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding: 8px 12px 8px 14px;
+    background: var(--white); border:1px solid var(--line);
+    border-radius: 999px; font-size:12px; font-weight:600;
+    color: var(--ink-soft); cursor:pointer;
+    border-width: 1px; border-style: solid;
+  }
+  .feed-header .filter-pill .ico{ font-size:10px; color: var(--green);}
+  .feed-header .filter-pill.is-debug .ico{ color: var(--accent);}
+
+  .scroll-area{
+    flex:1;
+    overflow-y: auto;
+    padding: 0 16px 120px;
+    scroll-behavior:smooth;
+    scrollbar-width:none;
+  }
+  .scroll-area::-webkit-scrollbar{display:none;}
+
+  .profile{ padding: 16px 0 8px;}
+  .profile-head{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    padding: 8px 8px 16px;
+  }
+  .profile-head .name{
+    font-family:'Fraunces', serif; font-size:32px; letter-spacing:-0.02em; line-height:1; color:var(--ink);
+  }
+  .profile-head .name .age{ color: var(--muted); font-weight:400;}
+  .profile-head .meta{ font-size:12px; color: var(--muted); margin-top:6px;}
+  .profile-head .match{
+    padding: 6px 10px; border-radius:999px;
+    background: rgba(233,75,75,0.08);
+    color: var(--accent-ink);
+    font-size:11px; font-weight:600; letter-spacing:0.03em;
+    border:1px solid rgba(233,75,75,0.18);
+    white-space: nowrap;
+  }
+  .profile-head .match.low{
+    background: rgba(139,130,120,0.08);
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+
+  .card{
+    background: var(--white);
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+  }
+  .card.photo{ aspect-ratio: 4/5; color: var(--white); position:relative;}
+  .photo-art{
+    position:absolute; inset:0; z-index:1;
+    display:flex; align-items:flex-end; justify-content:flex-start;
+    padding: 18px;
+    pointer-events: none;
+  }
+  .photo-art .label{
+    font-family:'Fraunces', serif;
+    font-size: 110px; line-height:1; letter-spacing:-0.04em;
+    opacity:0.95;
+    font-style: italic;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.18);
+  }
+  .photo-img{
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:cover; z-index:2;
+    opacity:0;
+    transition: opacity .4s ease;
+    pointer-events: none;
+  }
+  .photo-img.loaded{ opacity:1;}
+  .photo-overlay{
+    position:absolute; left:18px; bottom:18px; right:80px; z-index:4;
+    color: var(--white);
+    pointer-events: none;
+  }
+  .photo-overlay .info-line{
+    display:flex; align-items:center; gap:8px;
+    font-size:12px; letter-spacing:0.04em; text-transform:uppercase;
+    opacity: 0.95; font-weight:500;
+    flex-wrap:wrap;
+  }
+  .photo-overlay .info-line .sep{ width:3px; height:3px; border-radius:50%; background: rgba(255,255,255,0.7);}
+
+  .card.prompt{ padding: 28px 24px 28px; background: var(--white);}
+  .card.prompt .q{
+    font-family:'Inter', sans-serif;
+    font-weight:600; font-size:13px; color: var(--ink-soft);
+    letter-spacing: 0.02em;
+    margin-bottom: 14px;
+    line-height:1.45;
+  }
+  .card.prompt .a{
+    font-family:'Fraunces', serif;
+    font-style: italic;
+    font-weight:400;
+    font-size: 26px; line-height: 1.22;
+    color: var(--ink); letter-spacing:-0.015em;
+  }
+
+  /* Like button */
+  .like-btn{
+    position:absolute; bottom:14px; right:14px;
+    width:52px; height:52px; border-radius:50%;
+    background: var(--white);
+    border: 1.5px solid var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    box-shadow: 0 4px 14px rgba(22,19,15,0.18);
+    transition: transform .2s cubic-bezier(.22,1,.36,1), background .2s, border-color .2s;
+    z-index: 5;
+  }
+  .like-btn:hover{ transform: scale(1.06);}
+  .like-btn:active{ transform: scale(.92);}
+  .like-btn svg{ width:22px; height:22px; color: var(--ink); pointer-events:none;}
+  .like-btn.liked{ background: var(--accent); border-color: var(--accent);}
+  .like-btn.liked svg{ color: var(--white);}
+
+  /* Color decks */
+  .deck-1{ background: linear-gradient(135deg, #C9A56B 0%, #8B6B3F 100%);}
+  .deck-2{ background: linear-gradient(135deg, #5C7C5A 0%, #2F4F3D 100%);}
+  .deck-3{ background: linear-gradient(135deg, #D88B6A 0%, #7C3F30 100%);}
+  .deck-4{ background: linear-gradient(135deg, #2A241D 0%, #4A4138 100%);}
+  .deck-5{ background: linear-gradient(135deg, #8C97AB 0%, #4A5A7C 100%);}
+  .deck-6{ background: linear-gradient(135deg, #B85C5C 0%, #6F2A2A 100%);}
+  .deck-7{ background: linear-gradient(135deg, #C8A157 0%, #6E5728 100%);}
+  .deck-8{ background: linear-gradient(135deg, #4B6E5C 0%, #243A2F 100%);}
+
+  .photo-pattern::before{
+    content:""; position:absolute; inset:0; z-index:3;
+    background-image: radial-gradient(rgba(255,255,255,0.18) 1.2px, transparent 1.2px);
+    background-size: 22px 22px;
+    mix-blend-mode: overlay;
+    opacity: 0.4; pointer-events:none;
+  }
+  .photo-vignette::after{
+    content:""; position:absolute; inset:0; z-index:3;
+    background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.32) 100%);
+    pointer-events:none;
+  }
+
+  .ai-tag{
+    position:absolute; top:14px; left:14px; z-index:5;
+    display:inline-flex; align-items:center; gap:6px;
+    padding: 5px 10px;
+    background: rgba(250,246,240,0.96);
+    backdrop-filter: blur(8px);
+    border-radius: 999px;
+    font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--ink);
+    border:1px solid var(--line);
+    pointer-events: none;
+  }
+  .ai-tag .pip{ width:6px; height:6px; border-radius:50%; background: var(--green);}
+
+  .nav{
+    position:absolute; left:0; right:0; bottom:0;
+    background: rgba(250,246,240,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+    display:flex; align-items:center; justify-content:space-around;
+    z-index: 8;
+  }
+  .nav-btn{
+    background:transparent; border:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    color: var(--muted);
+    font-family:'Inter', sans-serif; font-size:10px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+    padding: 4px 8px;
+    transition: color .2s;
+    position: relative;
+  }
+  .nav-btn svg{width:22px; height:22px; pointer-events:none;}
+  .nav-btn.active{ color: var(--ink);}
+  .nav-btn .badge{
+    position:absolute; top:-2px; right:0;
+    background: var(--accent); color:var(--white);
+    font-size:9px; font-weight:700; padding: 1px 5px;
+    border-radius: 8px;
+    pointer-events: none;
+  }
+
+  .composer{
+    position:absolute; inset:auto 14px 92px 14px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 14px 14px 12px;
+    box-shadow: var(--shadow-pop);
+    display: none;
+    z-index: 9;
+  }
+  .composer.active{ display:block;}
+  .composer .label{ font-size:11px; color:var(--muted); font-weight:600; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px;}
+  .composer textarea{
+    width:100%; border:1px solid var(--line); border-radius: 12px;
+    padding: 10px 12px;
+    font-family:'Fraunces', serif; font-size:16px;
+    resize:none; outline:none; min-height: 56px;
+    background: var(--bg); color: var(--ink);
+  }
+  .composer .acts{ display:flex; justify-content:flex-end; gap:8px; margin-top: 8px;}
+  .composer .btn{ padding: 8px 14px; font-size:13px;}
+
+  /* Likes you */
+  .likes-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 4px 0;
+  }
+  .like-card{
+    background: var(--white);
+    border-radius: 20px;
+    overflow:hidden;
+    box-shadow: var(--shadow-card);
+    cursor:pointer;
+    position: relative;
+    transition: transform .25s cubic-bezier(.22,1,.36,1);
+  }
+  .like-card:active{ transform: scale(.98);}
+  .like-card .photo-thumb{
+    position:relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+  }
+  .like-card .photo-thumb img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition: opacity .35s; pointer-events:none;
+  }
+  .like-card .photo-thumb img.loaded{ opacity:1;}
+  .like-card .photo-thumb .photo-art{ padding: 12px;}
+  .like-card .photo-thumb .photo-art .label{ font-size: 64px;}
+  .like-card .photo-thumb::after{
+    content:""; position:absolute; inset:0;
+    background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.45) 100%);
+    z-index: 3; pointer-events:none;
+  }
+  .like-card .photo-thumb .new-pill{
+    position:absolute; top:10px; left:10px; z-index:4;
+    padding: 4px 8px;
+    background: var(--accent);
+    color: var(--white);
+    font-size: 9px; letter-spacing: 0.12em; text-transform:uppercase;
+    font-weight: 700;
+    border-radius: 999px;
+    pointer-events: none;
+  }
+  .like-card .photo-thumb .name-line{
+    position:absolute; left:12px; bottom:10px; right:12px; z-index:4;
+    color: var(--white);
+    font-family:'Fraunces', serif; font-size: 22px; letter-spacing: -0.02em;
+    pointer-events: none;
+  }
+  .like-card .photo-thumb .name-line .age{ opacity:0.8; font-weight: 400;}
+  .like-card .like-context{
+    padding: 12px 14px;
+    font-family:'Fraunces', serif; font-style: italic;
+    font-size: 13.5px; color: var(--ink-soft);
+    line-height: 1.4;
+    min-height: 56px;
+    pointer-events: none;
+  }
+  .like-card .like-context .label{
+    display:block;
+    font-family:'Inter', sans-serif;
+    font-style: normal;
+    font-size: 10px; letter-spacing: 0.14em; text-transform:uppercase;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  /* Empty state */
+  .empty-state{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding: 32px 32px 120px;
+    text-align:center;
+  }
+  .empty-art{
+    width:88px; height:88px; border-radius:28px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow-soft);
+    color: var(--accent);
+  }
+  .empty-art svg{ width:36px; height:36px;}
+  .empty-state h2{ font-size: 28px; margin-bottom: 10px;}
+  .empty-state h2 em{ font-style: italic; color: var(--accent-ink); font-weight: 500;}
+  .empty-state p{ color: var(--ink-soft); max-width: 280px; line-height: 1.5; font-size: 14px;}
+  .empty-state .note{
+    margin-top: 22px;
+    padding: 12px 16px;
+    background: var(--white);
+    border: 1px dashed var(--line-strong);
+    border-radius: 14px;
+    font-family:'Fraunces', serif; font-style: italic;
+    font-size: 13.5px; color: var(--ink-soft);
+    max-width: 300px;
+  }
+
+  /* Profile tab */
+  .me-card{
+    background: var(--white);
+    border:1px solid var(--line);
+    border-radius: 24px;
+    padding: 22px;
+    margin: 4px 0 18px;
+    display:flex; gap:18px; align-items:center;
+  }
+  .me-avatar{
+    width: 72px; height: 72px; border-radius: 50%;
+    overflow:hidden;
+    position:relative;
+    flex-shrink:0;
+    box-shadow: var(--shadow-soft);
+  }
+  .me-avatar img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2;
+    opacity:0; transition: opacity .35s; pointer-events:none;
+  }
+  .me-avatar img.loaded{ opacity:1;}
+  .me-avatar .fallback{
+    position:absolute; inset:0; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--white); font-family:'Fraunces', serif; font-size: 30px;
+    pointer-events: none;
+  }
+  .me-info .name{
+    font-family:'Fraunces', serif; font-size: 24px; line-height: 1; letter-spacing: -0.02em;
+  }
+  .me-info .age{ color: var(--muted); font-weight: 400;}
+  .me-info .role{ font-size: 13px; color: var(--ink-soft); margin-top: 4px;}
+  .me-info .score-line{
+    display:inline-flex; align-items:center; gap:6px;
+    margin-top: 8px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform:uppercase;
+    color: var(--accent-ink);
+  }
+
+  .section-title{
+    font-family:'Inter', sans-serif;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted);
+    margin: 18px 4px 10px;
+  }
+
+  .prompt-readback{
+    background: var(--bg-2);
+    border-radius: 18px;
+    padding: 16px 18px;
+    font-family:'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    border: 1px solid transparent;
+  }
+
+  .setting-row{
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .setting-row.clickable{ cursor:pointer;}
+  .setting-row .label{
+    font-size: 14px; font-weight: 500; color: var(--ink);
+  }
+  .setting-row .desc{
+    font-size: 12px; color: var(--muted); margin-top: 2px;
+  }
+  .setting-row .meta{ flex:1; pointer-events: none;}
+
+  .toggle{
+    width: 42px; height: 24px; border-radius: 999px;
+    background: var(--line-strong);
+    position:relative; cursor:pointer;
+    transition: background .25s;
+    flex-shrink: 0;
+  }
+  .toggle::after{
+    content:""; position:absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--white);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    transition: transform .25s cubic-bezier(.22,1,.36,1);
+    pointer-events: none;
+  }
+  .toggle.on{ background: var(--ink);}
+  .toggle.on::after{ transform: translateX(18px);}
+
+  .debug-fab{
+    position:absolute; right:18px; bottom: 92px;
+    z-index: 7;
+    background: var(--ink);
+    color: var(--bg);
+    border:none;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-family:'Inter', sans-serif;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    box-shadow: var(--shadow-card);
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform .2s, background .2s;
+  }
+  .debug-fab:active{ transform: scale(.96);}
+  .debug-fab .dot{
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    pointer-events: none;
+  }
+  .debug-fab.is-on{ background: var(--accent);}
+  .debug-fab.is-on .dot{ background: var(--white);}
+
+  /* Match modal */
+  .modal-back{
+    position:absolute; inset:0;
+    background: rgba(22,19,15,0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 50;
+    display:none;
+    align-items:center; justify-content:center;
+    opacity:0; transition: opacity .35s;
+    padding: 24px;
+  }
+  .modal-back.active{ display:flex; opacity:1;}
+  .modal{
+    width:100%; max-width:360px;
+    background: var(--bg);
+    border-radius: 28px;
+    padding: 32px 28px 24px;
+    box-shadow: var(--shadow-pop);
+    transform: translateY(20px) scale(.96);
+    opacity:0;
+    transition: transform .45s cubic-bezier(.22,1,.36,1), opacity .35s;
+    text-align:center;
+    position:relative;
+  }
+  .modal-back.active .modal{ transform: translateY(0) scale(1); opacity:1;}
+  .modal .kicker{
+    font-family:'Inter', sans-serif; font-size:11px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase;
+    color: var(--accent-ink);
+    margin-bottom: 14px;
+  }
+  .modal h2{ font-size: 34px; line-height:1.08; margin-bottom: 14px;}
+  .modal h2 em{ font-style: italic; color:var(--accent-ink); font-weight:500;}
+  .modal p{ color: var(--ink-soft); font-size:14px; margin-bottom: 22px;}
+  .modal .avatars{
+    display:flex; justify-content:center; gap: 0; margin: 8px 0 22px;
+    align-items: center;
+  }
+  .modal .avatar{
+    width:80px; height:80px; border-radius:50%;
+    position:relative; overflow:hidden;
+    box-shadow: var(--shadow-card);
+    border: 3px solid var(--bg);
+  }
+  .modal .avatar img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:2;
+    opacity:0; transition: opacity .35s; pointer-events:none;
+  }
+  .modal .avatar img.loaded{ opacity:1;}
+  .modal .avatar .fallback{
+    position:absolute; inset:0; z-index:1;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--white);
+    font-family:'Fraunces', serif; font-size: 32px;
+    pointer-events: none;
+  }
+  .modal .heart{
+    color: var(--accent);
+    width: 36px; height:36px;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--bg);
+    border-radius:50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    z-index: 2;
+    position:relative;
+    margin: 0 -14px;
+    pointer-events: none;
+  }
+  .modal .heart svg{ width: 18px; height: 18px;}
+
+  .feed-end{
+    text-align:center; color: var(--muted); padding: 24px 0 8px;
+    font-size: 13px; font-style:italic;
+  }
+  .feed-end-mark{
+    width:32px; height:1px; background: var(--line-strong); margin: 12px auto;
+  }
+  .no-matches{
+    text-align:center; padding: 40px 24px;
+    color: var(--ink-soft);
+  }
+  .no-matches h3{ font-size: 22px; margin-bottom: 10px;}
+  .no-matches em{ font-style: italic; color: var(--accent-ink); font-weight: 500;}
+
+  .row{ display:flex; gap:12px;}
+  .row > *{ flex:1;}
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px);} to { opacity:1; transform: translateY(0);} }
+  .stagger > *{ opacity:0; animation: fadeUp .55s cubic-bezier(.22,1,.36,1) forwards;}
+  .stagger > *:nth-child(1){ animation-delay: .05s;}
+  .stagger > *:nth-child(2){ animation-delay: .12s;}
+  .stagger > *:nth-child(3){ animation-delay: .2s;}
+  .stagger > *:nth-child(4){ animation-delay: .28s;}
+  .stagger > *:nth-child(5){ animation-delay: .36s;}
+  .stagger > *:nth-child(6){ animation-delay: .44s;}
+  .stagger > *:nth-child(7){ animation-delay: .50s;}
+
+  /* No-script fallback */
+  .noscript-warn{
+    position:fixed; inset:0; z-index:99997;
+    background: var(--bg); color: var(--ink);
+    display:flex; align-items:center; justify-content:center; padding:32px;
+    text-align:center; font-family:'Fraunces', serif; font-size:20px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================== -->
+<!-- DIAGNOSTIC INDICATORS (always)  -->
+<!-- ============================== -->
+<div id="js-status">JS …</div>
+<div id="err-banner"></div>
+<noscript><div class="noscript-warn">JavaScript is required for this prototype. Please enable JS and reload.</div></noscript>
+
+<div class="app" id="app">
+
+  <!-- SCREEN 1: Splash -->
+  <section class="screen active" id="splash">
+    <div class="splash-mark">L</div>
+    <div class="splash-hero">
+      <h1 class="serif">Dating, <em>designed by you.</em></h1>
+      <p>Describe who you're looking for in plain words. We'll only show you the people who fit — verified looks and traits, no endless swiping.</p>
+      <div class="splash-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div style="width:100%;">
+      <button type="button" class="btn btn-primary btn-block" data-action="goTo" data-arg="onboarding">Create your prompt</button>
+      <button type="button" class="btn btn-ghost btn-block" style="margin-top:6px; color:var(--ink-soft);" data-action="goTo" data-arg="onboarding">I already have an account</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: Prompt onboarding -->
+  <section class="screen" id="onboarding">
+    <div class="topbar">
+      <button type="button" class="back-btn" data-action="goTo" data-arg="splash" aria-label="Back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="step">
+        <div class="pip on"></div><div class="pip"></div><div class="pip"></div>
+      </div>
+      <div style="width:36px;"></div>
+    </div>
+
+    <div class="content">
+      <div class="lead-block">
+        <div class="eyebrow">Step 01 · The Prompt</div>
+        <h1>Tell us, in a sentence or two, <em>who you're hoping to meet.</em></h1>
+        <p>Looks, vibe, values, the way they spend a Sunday. The more specific you are, the better our matches.</p>
+      </div>
+
+      <div class="prompt-input">
+        <textarea id="userPrompt" placeholder="Someone warm and thoughtful, mid-30s, who'd rather hike than scroll. Curly hair is a soft spot. Reads more fiction than non-fiction. Quietly funny."></textarea>
+        <div class="prompt-foot">
+          <span id="charCount">0 / 280</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <span style="width:6px; height:6px; border-radius:50%; background: var(--green);"></span>
+            Private — only used to match
+          </span>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px;">
+        <div class="eyebrow" style="margin-bottom:10px;">Or start from a suggestion</div>
+        <div class="suggestion-list" id="suggestionList"></div>
+      </div>
+
+      <div style="margin-top: 22px;">
+        <div class="eyebrow" style="margin-bottom:10px;">Add a few traits</div>
+        <div class="chip-row" id="chips">
+          <button type="button" class="chip" data-action="toggleChip">Warm</button>
+          <button type="button" class="chip" data-action="toggleChip">Curious</button>
+          <button type="button" class="chip" data-action="toggleChip">Adventurous</button>
+          <button type="button" class="chip" data-action="toggleChip">Quietly funny</button>
+          <button type="button" class="chip" data-action="toggleChip">Athletic</button>
+          <button type="button" class="chip" data-action="toggleChip">Bookish</button>
+          <button type="button" class="chip" data-action="toggleChip">Family-oriented</button>
+          <button type="button" class="chip" data-action="toggleChip">Creative</button>
+          <button type="button" class="chip" data-action="toggleChip">Ambitious</button>
+          <button type="button" class="chip" data-action="toggleChip">Musical</button>
+          <button type="button" class="chip" data-action="toggleChip">Outdoorsy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-dock">
+      <button type="button" class="btn btn-primary btn-block" data-action="finishOnboarding">Continue</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: Profile setup -->
+  <section class="screen" id="setup">
+    <div class="topbar">
+      <button type="button" class="back-btn" data-action="goTo" data-arg="onboarding" aria-label="Back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="step">
+        <div class="pip on"></div><div class="pip on"></div><div class="pip"></div>
+      </div>
+      <div style="width:36px;"></div>
+    </div>
+
+    <div class="content">
+      <div class="lead-block">
+        <div class="eyebrow">Step 02 · Your profile</div>
+        <h1>Now, <em>show us who you are.</em></h1>
+        <p>Six photos, a few quick details, and a short prompt. Our AI scores your photos privately to help find people who'll find you attractive.</p>
+      </div>
+
+      <div class="photo-grid" id="photoGrid"></div>
+
+      <div class="field-card">
+        <label>Name</label>
+        <input type="text" id="userName" value="Mara" />
+      </div>
+
+      <div class="row">
+        <div class="field-card">
+          <label>Age</label>
+          <div class="value" id="ageRead">31</div>
+          <div class="slider-row" style="margin-top:8px;">
+            <input type="range" min="18" max="60" value="31" id="ageSlider"/>
+          </div>
+        </div>
+        <div class="field-card">
+          <label>Height</label>
+          <div class="value" id="heightRead">5'7"</div>
+          <div class="slider-row" style="margin-top:8px;">
+            <input type="range" min="55" max="80" value="67" id="heightSlider"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-card">
+        <label>Profession</label>
+        <input type="text" id="userJob" value="Product designer" />
+      </div>
+
+      <div class="field-card">
+        <label>A shower thought I recently had…</label>
+        <input type="text" id="userBio" placeholder="Type your answer" value="Sourdough starters are basically pets without the cuddles." />
+      </div>
+
+      <div class="field-card">
+        <label>Looking for</label>
+        <div class="seg" id="lookingSeg">
+          <button type="button" class="on" data-action="segPick">Long-term</button>
+          <button type="button" data-action="segPick">Short-term</button>
+          <button type="button" data-action="segPick">Open to anything</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-dock">
+      <button type="button" class="btn btn-primary btn-block" data-action="runAssessment">Run AI assessment</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: Score reveal -->
+  <section class="screen" id="score">
+    <div class="topbar">
+      <div style="width:36px;"></div>
+      <div class="step">
+        <div class="pip on"></div><div class="pip on"></div><div class="pip on"></div>
+      </div>
+      <div style="width:36px;"></div>
+    </div>
+
+    <div class="score-wrap">
+      <div class="eyebrow" style="margin-bottom:18px;">AI assessment · complete</div>
+      <h2 style="margin-bottom:8px;">Your <em style="font-style:italic; color:var(--accent-ink);">photo &amp; trait read</em></h2>
+      <p class="muted" style="font-size:14px; max-width:300px;">A private score we use to find people who'll likely be drawn to you.</p>
+
+      <div class="score-ring" aria-hidden="true">
+        <svg viewBox="0 0 200 200">
+          <circle class="track" cx="100" cy="100" r="90"></circle>
+          <circle class="arc" id="arc" cx="100" cy="100" r="90"></circle>
+        </svg>
+        <div class="score-center">
+          <div class="big" id="scoreNum">0.0</div>
+          <div class="out-of">photo score · out of 10</div>
+        </div>
+      </div>
+
+      <div class="trait-row" id="traits">
+        <span class="trait"><span class="dot"></span>Thoughtful</span>
+        <span class="trait"><span class="dot"></span>Adventurous</span>
+        <span class="trait"><span class="dot"></span>Quietly witty</span>
+        <span class="trait"><span class="dot"></span>Creative</span>
+      </div>
+
+      <p class="score-foot">
+        We never show this number to anyone else. It helps us narrow the pool to people who'll match your prompt — and whose prompt is likely to match you back.
+      </p>
+    </div>
+
+    <div class="cta-dock">
+      <button type="button" class="btn btn-primary btn-block" data-action="goTo" data-arg="main">See your matches</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 5: Main app (tabs) -->
+  <section class="screen" id="main">
+
+    <div class="tab-view active" id="tab-discover">
+      <div class="feed-header">
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px;">For <span id="promptHint">you</span></div>
+          <h2>Today's picks</h2>
+        </div>
+        <button type="button" class="filter-pill" data-action="filterPillClick">
+          <span class="ico">●</span> <span id="filterPillLabel">Prompt active</span>
+        </button>
+      </div>
+
+      <div class="scroll-area" id="feedList"></div>
+
+      <button type="button" class="debug-fab" id="debugFab" data-action="toggleTestMode">
+        <span class="dot"></span>
+        <span id="debugFabLabel">Show all</span>
+      </button>
+    </div>
+
+    <div class="tab-view" id="tab-likes">
+      <div class="feed-header">
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px;">Mutual interest</div>
+          <h2>Likes you</h2>
+        </div>
+        <span class="filter-pill" style="cursor:default;">
+          <span class="ico" style="color: var(--accent);">●</span> <span id="likesCountLabel">3 new</span>
+        </span>
+      </div>
+
+      <div class="scroll-area">
+        <div class="likes-grid" id="likesGrid"></div>
+      </div>
+    </div>
+
+    <div class="tab-view" id="tab-matches">
+      <div class="feed-header">
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px;">Your conversations</div>
+          <h2>Matches</h2>
+        </div>
+      </div>
+
+      <div class="empty-state">
+        <div class="empty-art" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10z"/>
+          </svg>
+        </div>
+        <h2>Your matches will <em>appear here.</em></h2>
+        <p>When you and someone like each other back, you'll find them in this list — along with the prompt that brought you together.</p>
+        <div class="note">"Tip: a like with a comment gets a reply 3× more often than one without."</div>
+      </div>
+    </div>
+
+    <div class="tab-view" id="tab-profile">
+      <div class="feed-header">
+        <div>
+          <div class="eyebrow" style="margin-bottom:6px;">You</div>
+          <h2>Profile</h2>
+        </div>
+      </div>
+
+      <div class="scroll-area">
+        <div class="me-card">
+          <div class="me-avatar deck-1">
+            <div class="fallback">M</div>
+            <img alt="" src="https://i.pravatar.cc/200?img=45" />
+          </div>
+          <div class="me-info">
+            <div class="name"><span id="meName">Mara</span><span class="age">, <span id="meAge">31</span></span></div>
+            <div class="role"><span id="meJob">Product designer</span> · Brooklyn</div>
+            <div class="score-line">
+              <span style="width:6px; height:6px; background: var(--accent); border-radius:50%; display:inline-block;"></span>
+              Photo score 8.4 · Verified
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Your prompt</div>
+        <div class="prompt-readback" id="promptReadback">…</div>
+        <button type="button" class="btn btn-secondary btn-block btn-sm" data-action="resetPrompt" style="margin-bottom: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+          Reset prompt
+        </button>
+
+        <div class="section-title">Test mode</div>
+        <div class="setting-row clickable" data-action="toggleTestMode">
+          <div class="meta">
+            <div class="label">Show all profiles</div>
+            <div class="desc">Bypass the prompt filter — sorted by match score, high to low.</div>
+          </div>
+          <div class="toggle" id="testModeToggle"></div>
+        </div>
+        <div class="setting-row clickable" data-action="resetPrompt">
+          <div class="meta">
+            <div class="label">Start over</div>
+            <div class="desc">Return to onboarding to change your prompt or details.</div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="color: var(--muted);"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+
+        <div class="section-title">Stats</div>
+        <div class="setting-row">
+          <div class="meta">
+            <div class="label">Pool size</div>
+            <div class="desc"><span id="poolSize">0</span> profiles considered today</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="meta">
+            <div class="label">Above 70% match</div>
+            <div class="desc"><span id="poolMatched">0</span> shown in Discover</div>
+          </div>
+        </div>
+
+        <div style="height: 32px;"></div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button type="button" class="nav-btn active" data-tab="discover" data-action="setTabAction" data-arg="discover">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        Discover
+      </button>
+      <button type="button" class="nav-btn" data-tab="likes" data-action="setTabAction" data-arg="likes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10z"/></svg>
+        Likes You
+        <span class="badge" id="likesBadge">3</span>
+      </button>
+      <button type="button" class="nav-btn" data-tab="matches" data-action="setTabAction" data-arg="matches">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7A8.38 8.38 0 0 1 4 11.5 8.5 8.5 0 1 1 21 11.5z"/></svg>
+        Matches
+      </button>
+      <button type="button" class="nav-btn" data-tab="profile" data-action="setTabAction" data-arg="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0 1 14 0v1"/></svg>
+        Profile
+      </button>
+    </nav>
+
+    <div class="composer" id="composer">
+      <div class="label">Add a comment to your like</div>
+      <textarea placeholder="A line they'll remember…" id="composerText"></textarea>
+      <div class="acts">
+        <button type="button" class="btn btn-ghost" data-action="closeComposer">Skip</button>
+        <button type="button" class="btn btn-primary" data-action="sendLike">Send like</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Match modal -->
+  <div class="modal-back" id="matchModal">
+    <div class="modal">
+      <div class="kicker">It's a match</div>
+      <h2>You and <em id="matchName">Noor</em> liked each other.</h2>
+
+      <div class="avatars">
+        <div class="avatar deck-1" id="meModalAvatar">
+          <div class="fallback">M</div>
+          <img alt="" src="https://i.pravatar.cc/200?img=45" />
+        </div>
+        <div class="heart">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10z"/></svg>
+        </div>
+        <div class="avatar" id="matchAvatar">
+          <div class="fallback" id="matchAvatarFallback">N</div>
+        </div>
+      </div>
+
+      <p>Say something good — most great conversations on Lumen start with the prompt you liked.</p>
+
+      <button type="button" class="btn btn-primary btn-block" data-action="closeMatch">Send a message</button>
+      <button type="button" class="btn btn-ghost btn-block" style="margin-top:4px; color:var(--ink-soft);" data-action="closeMatch">Keep browsing</button>
+    </div>
+  </div>
+
+  <div id="toast" style="
+    position:absolute; left:50%; bottom:96px; transform: translate(-50%, 20px);
+    background: var(--ink); color: var(--bg);
+    padding: 10px 16px; border-radius: 999px;
+    font-size: 13px; font-weight:500;
+    opacity:0; pointer-events:none;
+    transition: opacity .25s, transform .35s cubic-bezier(.22,1,.36,1);
+    z-index: 60;"></div>
+</div>
+
+<script>
+/* =================================================================== */
+/*  V3 — Event-delegation architecture                                  */
+/*  Set up error reporting + status indicator BEFORE anything else.     */
+/* =================================================================== */
+
+window.onerror = function(msg, src, line, col, err) {
+  try {
+    var b = document.getElementById('err-banner');
+    var detail = (msg || 'unknown') + '\n@ ' + (src || '?') + ':' + (line||'?') + ':' + (col||'?');
+    if (err && err.stack) detail += '\n' + err.stack;
+    if (b) {
+      b.innerHTML = '<strong>JS error:</strong> ' + detail.replace(/[<>&]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; });
+      b.className = 'on';
+    }
+  } catch(e){}
+  return false;
+};
+
+(function setJsStatus(state){
+  var s = document.getElementById('js-status');
+  if (s) {
+    if (state === 'loading') { s.textContent = 'JS …'; s.className = ''; }
+    if (state === 'ok')      { s.textContent = 'JS ✓';  s.className = 'ok'; }
+  }
+})('loading');
+
+/* =================================================================== */
+/*  MOCK DATA                                                           */
+/* =================================================================== */
+function PRAVATAR(n){ return 'https://i.pravatar.cc/600?img=' + n; }
+
+var profiles = [
+  { id:'noor', name:'Noor', age:32, job:'Documentary editor', city:'Brooklyn', initial:'N', deck:'deck-2', baseScore:80,
+    traits:['warm','thoughtful','curly','bookish','witty','creative','curious','funny','fiction'],
+    cards:[
+      { type:'photo', photo:47, info:['Brooklyn',"5'8\"",'Documentary editor'] },
+      { type:'prompt', q:'A shower thought I recently had…', a:'If trees gossip via roots, the oldest one in Prospect Park has the best stories.' },
+      { type:'photo', photo:25, info:['Hikes most weekends','Adopts the dog'] },
+      { type:'prompt', q:'My most controversial opinion…', a:"Cilantro is a personality test, and I'm passing." },
+      { type:'prompt', q:'I get along best with people who…', a:'Underline things in books and make their own playlists.' }
+    ] },
+  { id:'lea', name:'Léa', age:29, job:'Mountaineering guide', city:'Chamonix', initial:'L', deck:'deck-8', baseScore:78,
+    traits:['athletic','adventurous','warm','curly','outdoorsy','mountains','hike','calm','quiet'],
+    cards:[
+      { type:'photo', photo:5, info:['Chamonix',"5'6\"",'Mountain guide'] },
+      { type:'prompt', q:'The way to win me over is…', a:"Bring a thermos of something warm and a question I'll have to think about for a minute." },
+      { type:'prompt', q:'Dating me is like…', a:'A pre-dawn alpine start. Cold at first, but the view at the top is the whole point.' },
+      { type:'photo', photo:9, info:['Reads on chairlifts','Speaks four languages'] },
+      { type:'prompt', q:"I'm convinced that…", a:'Everyone should be obsessed with one thing that pays them nothing.' }
+    ] },
+  { id:'daniel', name:'Daniel', age:34, job:'Cellist & teacher', city:'Berlin', initial:'D', deck:'deck-4', baseScore:77,
+    traits:['creative','intellectual','warm','musical','quietly','funny','thoughtful','bookish'],
+    cards:[
+      { type:'photo', photo:12, info:['Berlin',"6'1\"",'Cellist'] },
+      { type:'prompt', q:'Two truths and a lie…', a:"I've played at Wigmore Hall. I've made my own pasta machine. I'm fluent in Mandarin. (One is wishful.)" },
+      { type:'prompt', q:'I get along best with people who…', a:'Are easily delighted, hard to bore, and never make you guess where you stand.' },
+      { type:'photo', photo:33, info:['Cooks for ten on Sundays','Wakes up before the city'] },
+      { type:'prompt', q:'My simple pleasures…', a:'The first hour of practice when the apartment is still asleep. Espresso, then coffee.' }
+    ] },
+  { id:'asha', name:'Asha', age:30, job:'Climate scientist', city:'Lisbon', initial:'A', deck:'deck-3', baseScore:75,
+    traits:['athletic','swimming','warm','bookish','curious','ambitious','adventurous','fiction','outdoorsy'],
+    cards:[
+      { type:'photo', photo:26, info:['Lisbon',"5'5\"",'Climate scientist'] },
+      { type:'prompt', q:'My simple pleasures…', a:'A long swim, then a longer breakfast. Anything written by Annie Dillard. The first oranges of the year.' },
+      { type:'photo', photo:44, info:['Surfs before 7am','Loves a long walk'] },
+      { type:'prompt', q:'The way to win me over is…', a:"Care about something pointless deeply. Then tell me about it for ten uninterrupted minutes." },
+      { type:'prompt', q:'A non-negotiable…', a:'Hope. Even on bad data days.' }
+    ] },
+  { id:'jonah', name:'Jonah', age:33, job:'Architect', city:'Copenhagen', initial:'J', deck:'deck-5', baseScore:74,
+    traits:['creative','curious','warm','intellectual','quiet','design','thoughtful','minimal'],
+    cards:[
+      { type:'photo', photo:8, info:['Copenhagen',"5'11\"",'Architect'] },
+      { type:'prompt', q:'A non-negotiable…', a:'Curiosity. About anything. The kind that asks the second question.' },
+      { type:'photo', photo:17, info:['Sketches in cafés','Cycles in any weather'] },
+      { type:'prompt', q:'We get along if you…', a:"Notice the way light falls on a wall and think, huh, that's nice." },
+      { type:'prompt', q:'The dorkiest thing about me…', a:"I keep a notebook just for door handles I've liked." }
+    ] },
+  { id:'mira', name:'Mira', age:27, job:'Behavioral economist', city:'Zürich', initial:'M', deck:'deck-6', baseScore:72,
+    traits:['intellectual','witty','ambitious','curious','warm','bookish','funny','enfj'],
+    cards:[
+      { type:'photo', photo:16, info:['Zürich',"5'4\"",'Behavioral economist'] },
+      { type:'prompt', q:'My greatest strength…', a:'I can make a spreadsheet of almost any feeling. (Yes, that comes with caveats.)' },
+      { type:'prompt', q:"I'm overly competitive about…", a:'Pub quizzes. Specifically the geography rounds. Specifically the capitals.' },
+      { type:'photo', photo:32, info:['Speaks at conferences','Hides in the back at parties'] },
+      { type:'prompt', q:'First round is on me if…', a:'You can convince me, in under a minute, that pineapple does or does not belong on pizza.' }
+    ] },
+  { id:'elena', name:'Elena', age:35, job:'Pediatric surgeon', city:'Geneva', initial:'E', deck:'deck-1', baseScore:71,
+    traits:['warm','thoughtful','intellectual','family','calm','ambitious','quietly','musical'],
+    cards:[
+      { type:'photo', photo:20, info:['Geneva',"5'7\"",'Pediatric surgeon'] },
+      { type:'prompt', q:'My love language is…', a:'Bringing you food when you forgot to eat. (I will notice. I always notice.)' },
+      { type:'prompt', q:'A non-negotiable…', a:'Kindness toward waiters. Punctuality. A taste for old movies.' },
+      { type:'photo', photo:49, info:['Plays piano badly, happily','Reads two books at once'] },
+      { type:'prompt', q:"We'll get along if you…", a:'Know that the best Sundays involve doing nothing in particular, very deliberately.' }
+    ] },
+  { id:'tomas', name:'Tomás', age:31, job:'Chef', city:'Lisbon', initial:'T', deck:'deck-7', baseScore:68,
+    traits:['creative','warm','sensual','ambitious','adventurous','funny','musical','outdoorsy'],
+    cards:[
+      { type:'photo', photo:14, info:['Lisbon',"5'10\"",'Chef'] },
+      { type:'prompt', q:'A shower thought I recently had…', a:'Garlic is the only ingredient I trust unconditionally.' },
+      { type:'prompt', q:'The way to win me over is…', a:'Eat with your hands. Lick the spoon. Show up hungry.' },
+      { type:'photo', photo:60, info:['Closes the restaurant at 1am','Surfs at 7am anyway'] },
+      { type:'prompt', q:'My simple pleasures…', a:'A cold beer after service. Footnotes in cookbooks. Slow boats.' }
+    ] },
+  { id:'sana', name:'Sana', age:28, job:'Marine biologist', city:'Cape Town', initial:'S', deck:'deck-2', baseScore:73,
+    traits:['athletic','curious','adventurous','outdoorsy','warm','intellectual','surfing','funny','curly'],
+    cards:[
+      { type:'photo', photo:23, info:['Cape Town',"5'9\"",'Marine biologist'] },
+      { type:'prompt', q:"I'm convinced that…", a:"Octopuses know things we don't, and they think we're loud." },
+      { type:'photo', photo:38, info:['Surfs Muizenberg','Names every dog she meets'] },
+      { type:'prompt', q:'A non-negotiable…', a:'A sense of humour about cold water.' },
+      { type:'prompt', q:'My greatest strength…', a:'I can stay still for a long time. Useful around fish; less useful at parties.' }
+    ] },
+  { id:'theo', name:'Theo', age:38, job:'Jazz pianist', city:'New York', initial:'T', deck:'deck-4', baseScore:66,
+    traits:['creative','musical','witty','warm','urban','bohemian','funny','older'],
+    cards:[
+      { type:'photo', photo:11, info:['New York',"6'0\"",'Pianist'] },
+      { type:'prompt', q:'Two truths and a lie…', a:"I once played the same Monk tune for forty minutes. I cried at a Pixar film last week. I've never owned a smartphone." },
+      { type:'prompt', q:'My most controversial opinion…', a:'Most music sounds better on a bad speaker in a small kitchen.' },
+      { type:'photo', photo:53, info:['Walks home from gigs','Knows every diner east of 8th'] },
+      { type:'prompt', q:"We'll get along if you…", a:"Don't mind a man who tears up at a good chord change. (Sorry.)" }
+    ] },
+  { id:'ines', name:'Ines', age:26, job:'Graphic novelist', city:'Madrid', initial:'I', deck:'deck-3', baseScore:64,
+    traits:['creative','introvert','bookish','art','witty','quietly','funny','galleries'],
+    cards:[
+      { type:'photo', photo:24, info:['Madrid',"5'3\"",'Graphic novelist'] },
+      { type:'prompt', q:'The dorkiest thing about me…', a:'I draw the people in front of me on the metro. Sorry, person from June 3rd.' },
+      { type:'prompt', q:'My simple pleasures…', a:'Bookstore basements. Cold tomato soup. Friends who text you a photo and nothing else.' },
+      { type:'photo', photo:41, info:['First book out next spring','Drinks coffee like it costs nothing'] },
+      { type:'prompt', q:'A non-negotiable…', a:"At least one weird hobby. Yours, not mine. I have plenty of my own." }
+    ] },
+  { id:'kai', name:'Kai', age:33, job:'UX researcher', city:'Tokyo', initial:'K', deck:'deck-5', baseScore:65,
+    traits:['curious','intellectual','introvert','thoughtful','design','minimal','quietly'],
+    cards:[
+      { type:'photo', photo:15, info:['Tokyo',"5'10\"",'UX researcher'] },
+      { type:'prompt', q:'A shower thought I recently had…', a:"Subway maps are mostly fiction. They're better that way." },
+      { type:'photo', photo:7, info:['Runs at 5am','Collects fountain pens'] },
+      { type:'prompt', q:'We get along if you…', a:'Like a long silence in the right company, and a long noodle in the right bowl.' },
+      { type:'prompt', q:'My love language is…', a:'Remembering things. Yours, mostly.' }
+    ] },
+  { id:'ana', name:'Ana', age:30, job:'Literary translator', city:'Buenos Aires', initial:'A', deck:'deck-6', baseScore:61,
+    traits:['warm','bookish','musical','witty','family','tango','quietly','funny','fiction'],
+    cards:[
+      { type:'photo', photo:21, info:['Buenos Aires',"5'5\"",'Translator'] },
+      { type:'prompt', q:'My most controversial opinion…', a:"Translation is just very slow conversation. Don't @ me, my Borges is fine." },
+      { type:'photo', photo:36, info:['Dances at the milonga on Tuesdays'] },
+      { type:'prompt', q:'My simple pleasures…', a:"My mother's voice on the phone. A bookstore with a cat. Late lunch, even later coffee." },
+      { type:'prompt', q:'First round is on me if…', a:"You can name a poet from a country that isn't yours." }
+    ] },
+  { id:'felix', name:'Felix', age:40, job:'Wine importer', city:'Vienna', initial:'F', deck:'deck-8', baseScore:58,
+    traits:['curious','warm','adventurous','intellectual','older','calm','bookish'],
+    cards:[
+      { type:'photo', photo:13, info:['Vienna',"6'2\"",'Wine importer'] },
+      { type:'prompt', q:"We'll get along if you…", a:"Don't take wine too seriously, but take a good Wednesday seriously." },
+      { type:'photo', photo:50, info:['Travels to Slovenia for cheese','Reads Calvino in winter'] },
+      { type:'prompt', q:'A non-negotiable…', a:"A good listener. There are stories I haven't told yet." },
+      { type:'prompt', q:'My love language is…', a:'Showing up early. With bread.' }
+    ] },
+  { id:'yumi', name:'Yumi', age:24, job:'Industrial designer', city:'Seoul', initial:'Y', deck:'deck-1', baseScore:56,
+    traits:['creative','ambitious','curious','introvert','urban','design','young','art'],
+    cards:[
+      { type:'photo', photo:19, info:['Seoul',"5'4\"",'Industrial designer'] },
+      { type:'prompt', q:'The dorkiest thing about me…', a:"I have strong opinions about kettle spouts." },
+      { type:'prompt', q:'My greatest strength…', a:"I make things people actually want to pick up." },
+      { type:'photo', photo:42, info:['Loves a cold morning','Plays the same album for a month'] },
+      { type:'prompt', q:'My simple pleasures…', a:'New stationery. Old cassette tapes. The first sip of anything.' }
+    ] }
+];
+
+var likesYou = [
+  { profileId:'daniel', liked:{ type:'prompt', text:'Sourdough starters are basically pets without the cuddles.' } },
+  { profileId:'asha',   liked:{ type:'photo',  text:'Your first photo' } },
+  { profileId:'mira',   liked:{ type:'prompt', text:'Sourdough starters are basically pets without the cuddles.' } },
+  { profileId:'tomas',  liked:{ type:'photo',  text:'Your second photo' } }
+];
+
+var promptSuggestions = [
+  'Warm and intellectual, ENFJ-leaning. The kind who asks the second question and remembers what you said.',
+  'Creative, drawn to mountains, late-30s. Reads slowly, writes longer letters than texts.',
+  'Extrovert, music lover, mid-30s. Knows every diner in their neighbourhood. Always up for a long walk.',
+  'Introvert. Books and art galleries on Saturdays. Curly hair is a soft spot. Quietly funny.',
+  'Athletic, outdoorsy, ambitious. Surfs or hikes most weekends. A non-negotiable: kindness.'
+];
+
+var state = {
+  prompt: '',
+  chips: [],
+  user: { name:'Mara', age:31, height:67, job:'Product designer', bio:'', looking:'Long-term', score:8.4 },
+  likedSet: {},
+  testMode: false,
+  currentTab: 'discover',
+  pendingLike: null
+};
+
+/* =================================================================== */
+/*  EVENT DELEGATION DISPATCHER                                          */
+/* =================================================================== */
+function bindGlobalClicks(){
+  document.addEventListener('click', function(e){
+    var el = e.target;
+    if (el && el.closest) {
+      var t = el.closest('[data-action]');
+      if (!t) return;
+      var action = t.getAttribute('data-action');
+      var arg = t.getAttribute('data-arg');
+      var fn = window[action];
+      if (typeof fn === 'function') {
+        try { fn(arg, t, e); } catch (err) { showError(action + ': ' + err.message + '\n' + err.stack); }
+      } else {
+        showError('Unknown action: ' + action);
+      }
+    }
+  }, false);
+}
+
+function showError(msg){
+  var b = document.getElementById('err-banner');
+  if (b){
+    b.innerHTML = '<strong>JS error:</strong> ' + String(msg).replace(/[<>&]/g, function(c){ return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c]; });
+    b.className = 'on';
+  }
+}
+
+/* =================================================================== */
+/*  HELPERS                                                              */
+/* =================================================================== */
+function $(id){ return document.getElementById(id); }
+function $$(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+function inchesToStr(v){ var ft=Math.floor(v/12); var inch=v-ft*12; return ft + "'" + inch + '"'; }
+function truncate(s, n){ return s.length <= n ? s : s.slice(0, n-1) + '…'; }
+function escHtml(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function likeKey(pid, ci){ return pid + ':' + ci; }
+function isLiked(pid, ci){ return !!state.likedSet[likeKey(pid, ci)]; }
+function setLiked(pid, ci, v){ if (v) state.likedSet[likeKey(pid,ci)] = true; else delete state.likedSet[likeKey(pid,ci)]; }
+
+/* =================================================================== */
+/*  SCREEN NAVIGATION                                                    */
+/* =================================================================== */
+function goTo(id){
+  var screens = $$('.screen');
+  for (var i=0;i<screens.length;i++) screens[i].classList.remove('active');
+  var el = $(id);
+  if (!el) { showError('No screen: ' + id); return; }
+  el.classList.add('active');
+  if (id === 'main') syncMain();
+  if (id === 'score') animateScore();
+}
+
+function setTabAction(arg){
+  setTab(arg);
+}
+
+function setTab(tab){
+  state.currentTab = tab;
+  var views = $$('.tab-view');
+  for (var i=0;i<views.length;i++) views[i].classList.remove('active');
+  var v = $('tab-' + tab);
+  if (v) v.classList.add('active');
+  var navs = $$('.nav-btn');
+  for (var j=0;j<navs.length;j++) navs[j].classList.toggle('active', navs[j].getAttribute('data-tab') === tab);
+  if (tab === 'discover') renderFeed();
+  if (tab === 'likes') renderLikesYou();
+  if (tab === 'profile') renderProfile();
+}
+
+function syncMain(){ setTab('discover'); }
+
+/* =================================================================== */
+/*  ONBOARDING                                                           */
+/* =================================================================== */
+function bindOnboarding(){
+  var ta = $('userPrompt');
+  var charCount = $('charCount');
+  if (ta) {
+    ta.addEventListener('input', function(){
+      var n = ta.value.length;
+      if (n > 280) { ta.value = ta.value.slice(0,280); n = 280; }
+      if (charCount) charCount.textContent = n + ' / 280';
+    });
+  }
+
+  // Render suggestion buttons (delegation reads data-action)
+  var list = $('suggestionList');
+  if (list) {
+    list.innerHTML = '';
+    for (var i = 0; i < promptSuggestions.length; i++) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'suggestion';
+      btn.setAttribute('data-action', 'pickSuggestion');
+      btn.setAttribute('data-arg', String(i));
+      var span = document.createElement('span');
+      span.textContent = promptSuggestions[i];
+      btn.appendChild(span);
+      list.appendChild(btn);
+    }
+  }
+}
+
+function pickSuggestion(arg, el){
+  var i = parseInt(arg, 10);
+  var s = promptSuggestions[i];
+  if (!s) return;
+  var ta = $('userPrompt');
+  if (ta) {
+    ta.value = s;
+    var cc = $('charCount');
+    if (cc) cc.textContent = s.length + ' / 280';
+    ta.focus();
+  }
+  if (el && el.animate) {
+    el.animate(
+      [{ transform:'scale(1)' },{ transform:'scale(.98)' },{ transform:'scale(1)' }],
+      { duration: 280, easing: 'cubic-bezier(.22,1,.36,1)' }
+    );
+  }
+}
+
+function toggleChip(arg, el){
+  if (!el) return;
+  el.classList.toggle('is-selected');
+}
+
+function finishOnboarding(){
+  var ta = $('userPrompt');
+  var promptText = (ta && ta.value.trim()) ? ta.value.trim() : (ta ? ta.placeholder : '');
+  var chips = $$('#chips .chip.is-selected').map(function(c){ return c.textContent.trim(); });
+  state.prompt = promptText;
+  state.chips = chips;
+  goTo('setup');
+}
+
+/* =================================================================== */
+/*  PROFILE SETUP                                                        */
+/* =================================================================== */
+function bindSetup(){
+  var grid = $('photoGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  var seedDecks = ['deck-1','deck-7'];
+  var myPhotoIds = [45, 30];
+
+  for (var i = 0; i < 6; i++){
+    var slot = document.createElement('div');
+    var filled = i < 2;
+    slot.className = 'photo-slot' + (filled ? ' filled ' + seedDecks[i] : '');
+    slot.setAttribute('data-action', 'addPhoto');
+    slot.setAttribute('data-idx', String(i));
+
+    var cn = document.createElement('div');
+    cn.className = 'corner-num';
+    cn.textContent = String(i + 1);
+    slot.appendChild(cn);
+
+    if (filled) {
+      var fb = document.createElement('div');
+      fb.className = 'slot-fallback';
+      var fbSpan = document.createElement('span');
+      fbSpan.textContent = 'M';
+      fb.appendChild(fbSpan);
+      slot.appendChild(fb);
+
+      var img = document.createElement('img');
+      img.alt = '';
+      img.src = PRAVATAR(myPhotoIds[i]);
+      img.onload = function(){ this.classList.add('loaded'); };
+      img.onerror = function(){ this.parentNode.removeChild(this); };
+      slot.appendChild(img);
+    } else {
+      var plus = document.createElement('div');
+      plus.className = 'plus';
+      plus.textContent = '+';
+      slot.appendChild(plus);
+    }
+    grid.appendChild(slot);
+  }
+
+  var ageSlider = $('ageSlider');
+  var ageRead = $('ageRead');
+  if (ageSlider) ageSlider.addEventListener('input', function(){ if (ageRead) ageRead.textContent = ageSlider.value; });
+
+  var heightSlider = $('heightSlider');
+  var heightRead = $('heightRead');
+  if (heightSlider) heightSlider.addEventListener('input', function(){
+    if (heightRead) heightRead.textContent = inchesToStr(parseInt(heightSlider.value, 10));
+  });
+}
+
+function addPhoto(arg, el){
+  if (!el || el.classList.contains('filled')) return;
+  var decks = ['deck-2','deck-3','deck-4','deck-5','deck-6','deck-8'];
+  var used = $$('.photo-slot.filled').map(function(n){ return n.className; }).join(' ');
+  var choice = null;
+  for (var d=0; d<decks.length; d++){ if (used.indexOf(decks[d]) < 0){ choice = decks[d]; break; } }
+  if (!choice) choice = decks[Math.floor(Math.random()*decks.length)];
+
+  var usedIds = $$('.photo-slot.filled img').map(function(im){ return parseInt(im.getAttribute('data-id')||'0',10); });
+  var pick = 0;
+  do { pick = Math.floor(Math.random()*68)+1; } while (usedIds.indexOf(pick) >= 0);
+
+  el.classList.add('filled', choice);
+  el.innerHTML = '';
+  var cn = document.createElement('div'); cn.className = 'corner-num'; cn.textContent = arg; el.appendChild(cn);
+  var fb = document.createElement('div'); fb.className = 'slot-fallback';
+  var fbSpan = document.createElement('span'); fbSpan.textContent = 'M'; fb.appendChild(fbSpan); el.appendChild(fb);
+  var img = document.createElement('img');
+  img.alt = ''; img.setAttribute('data-id', String(pick));
+  img.onload = function(){ this.classList.add('loaded'); };
+  img.onerror = function(){ if (this.parentNode) this.parentNode.removeChild(this); };
+  img.src = PRAVATAR(pick);
+  el.appendChild(img);
+  toast('Photo added');
+}
+
+function segPick(arg, el){
+  if (!el) return;
+  var parent = el.parentNode;
+  if (!parent) return;
+  var btns = parent.querySelectorAll('button');
+  for (var i=0;i<btns.length;i++) btns[i].classList.remove('on');
+  el.classList.add('on');
+}
+
+function runAssessment(){
+  state.user.name = ($('userName') && $('userName').value.trim()) || 'Mara';
+  state.user.age = parseInt(($('ageSlider')||{value:31}).value, 10);
+  state.user.height = parseInt(($('heightSlider')||{value:67}).value, 10);
+  state.user.job = ($('userJob') && $('userJob').value.trim()) || 'Product designer';
+  state.user.bio = ($('userBio') && $('userBio').value.trim()) || '';
+  var onSeg = document.querySelector('#lookingSeg .on');
+  state.user.looking = onSeg ? onSeg.textContent.trim() : 'Long-term';
+  goTo('score');
+}
+
+/* =================================================================== */
+/*  SCORE REVEAL                                                         */
+/* =================================================================== */
+function animateScore(){
+  var arc = $('arc');
+  var num = $('scoreNum');
+  if (!arc || !num) return;
+  arc.style.transition = 'none';
+  arc.style.strokeDashoffset = '565.48';
+  num.textContent = '0.0';
+  void arc.getBoundingClientRect();
+  arc.style.transition = 'stroke-dashoffset 1.6s cubic-bezier(.22,1,.36,1)';
+  var target = state.user.score;
+  var offset = 565.48 - (565.48 * (target/10));
+  requestAnimationFrame(function(){ arc.style.strokeDashoffset = String(offset); });
+  var start = performance.now();
+  var dur = 1500;
+  function step(t){
+    var e = Math.min(1, (t-start)/dur);
+    var eased = 1 - Math.pow(1-e, 3);
+    num.textContent = (target * eased).toFixed(1);
+    if (e < 1) requestAnimationFrame(step);
+    else num.textContent = target.toFixed(1);
+  }
+  requestAnimationFrame(step);
+}
+
+/* =================================================================== */
+/*  MATCH-SCORING                                                        */
+/* =================================================================== */
+var STOPWORDS = (function(){
+  var arr = ['a','an','the','and','or','but','for','to','of','in','on','at','with','who','how','that','i','you','your','someone','their',
+    'my','is','are','be','will','would','could','than','more','rather','soft','spot','really','any','very','about','from',
+    'non','if','so','too','as','it','its','do','did','done','what','because','one','two','also','just','they','them','this','these','those',
+    'am','was','were','have','has','had','can','should','must','might','may','some','no','not','yes','only','me','dont',
+    'kind','like','likes','loves','love','want','wants','prefer','hoping','meet','people','person','than',
+    'mid','late','early','years','old'];
+  var s = {};
+  for (var i=0;i<arr.length;i++) s[arr[i]] = true;
+  return s;
+})();
+
+function extractKeywords(text){
+  var words = (text || '').toLowerCase().match(/[a-z]+/g) || [];
+  var kw = {};
+  for (var i=0;i<words.length;i++){
+    var w = words[i];
+    if (w.length > 2 && !STOPWORDS[w]) kw[w] = true;
+    if (w.length > 5 && w.slice(-3) === 'ing') kw[w.slice(0,-3)] = true;
+    if (w.length > 4 && w.slice(-2) === 'ly')  kw[w.slice(0,-2)] = true;
+    if (w.length > 3 && w.slice(-1) === 's')   kw[w.slice(0,-1)] = true;
+  }
+  return kw;
+}
+
+function getEffectivePrompt(){
+  return state.prompt + ' ' + state.chips.join(' ');
+}
+
+function computeMatch(profile){
+  var kw = extractKeywords(getEffectivePrompt());
+  var matches = 0;
+  for (var i=0;i<profile.traits.length;i++){
+    var t = profile.traits[i];
+    var tokens = t.toLowerCase().match(/[a-z]+/g) || [];
+    for (var j=0;j<tokens.length;j++){
+      if (kw[tokens[j]]){ matches++; break; }
+    }
+  }
+  var bonus = matches * 5;
+  if (bonus > 22) bonus = 22;
+  var score = profile.baseScore + bonus;
+  if (score > 99) score = 99;
+  return score;
+}
+
+function scoredProfiles(){
+  var arr = profiles.map(function(p){ return { profile: p, score: computeMatch(p) }; });
+  arr.sort(function(a,b){ return b.score - a.score; });
+  return arr;
+}
+
+/* =================================================================== */
+/*  FEED RENDER                                                          */
+/* =================================================================== */
+function updatePromptHint(){
+  var v = state.prompt;
+  var hint = v ? truncate(v, 32) : 'someone like your prompt';
+  var el = $('promptHint');
+  if (el) el.textContent = hint;
+}
+
+function renderFeed(){
+  updatePromptHint();
+  updateFilterPill();
+  var feedList = $('feedList');
+  if (!feedList) return;
+  feedList.innerHTML = '';
+
+  var scored = scoredProfiles();
+  var visible = state.testMode ? scored : scored.filter(function(x){ return x.score > 70; });
+
+  if (visible.length === 0){
+    var empty = document.createElement('div');
+    empty.className = 'no-matches';
+    empty.innerHTML = '<h3>No one matches <em>that prompt</em> today.</h3>'
+      + '<p class="muted" style="font-size:14px; max-width:280px; margin: 0 auto 18px;">Try a slightly broader prompt — or flip on \"Show all\" in your Profile tab to see who\'s in the pool.</p>'
+      + '<button type="button" class="btn btn-secondary btn-sm" data-action="toggleTestMode">Show all profiles</button>';
+    feedList.appendChild(empty);
+    return;
+  }
+
+  for (var pi = 0; pi < visible.length; pi++){
+    var p = visible[pi].profile;
+    var score = visible[pi].score;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'profile stagger';
+
+    var head = document.createElement('div');
+    head.className = 'profile-head';
+    var matchClass = score > 70 ? '' : ' low';
+    head.innerHTML = '<div>'
+      + '<div class="name">' + escHtml(p.name) + '<span class="age">, ' + p.age + '</span></div>'
+      + '<div class="meta">' + escHtml(p.job) + ' · ' + escHtml(p.city) + '</div>'
+      + '</div>'
+      + '<div class="match' + matchClass + '">' + score + '% match</div>';
+    wrap.appendChild(head);
+
+    for (var ci = 0; ci < p.cards.length; ci++){
+      var c = p.cards[ci];
+      var card = document.createElement('div');
+      var liked = isLiked(p.id, ci);
+
+      if (c.type === 'photo'){
+        card.className = 'card photo ' + p.deck + ' photo-pattern photo-vignette';
+        var infoHtml = '';
+        if (c.info) {
+          for (var k = 0; k < c.info.length; k++){
+            if (k > 0) infoHtml += '<span class="sep"></span>';
+            infoHtml += '<span>' + escHtml(c.info[k]) + '</span>';
+          }
+        }
+        card.innerHTML = '<div class="photo-art"><span class="label">' + escHtml(p.initial) + '</span></div>'
+          + '<img class="photo-img" alt="" data-src="' + PRAVATAR(c.photo) + '" src="' + PRAVATAR(c.photo) + '" />'
+          + '<div class="ai-tag"><span class="pip"></span>Verified · AI-read</div>'
+          + '<div class="photo-overlay"><div class="info-line">' + infoHtml + '</div></div>'
+          + '<button type="button" class="like-btn ' + (liked ? 'liked' : '') + '" data-action="likeCard" data-pid="' + p.id + '" data-ci="' + ci + '" aria-label="Like this photo">' + heartSvg() + '</button>';
+      } else {
+        card.className = 'card prompt';
+        card.innerHTML = '<div class="q">' + escHtml(c.q) + '</div>'
+          + '<div class="a">"' + escHtml(c.a) + '"</div>'
+          + '<button type="button" class="like-btn ' + (liked ? 'liked' : '') + '" data-action="likeCard" data-pid="' + p.id + '" data-ci="' + ci + '" aria-label="Like this prompt">' + heartSvg() + '</button>';
+      }
+      wrap.appendChild(card);
+    }
+
+    feedList.appendChild(wrap);
+  }
+
+  // wire up onload/onerror for newly-created images
+  $$('.photo-img', feedList).forEach(function(img){
+    img.onload = function(){ this.classList.add('loaded'); };
+    img.onerror = function(){ if (this.parentNode) this.parentNode.removeChild(this); };
+    if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+  });
+
+  var end = document.createElement('div');
+  end.className = 'feed-end';
+  end.innerHTML = '<div class="feed-end-mark"></div>'
+    + (state.testMode ? 'Showing all profiles in the pool.' : "That's everyone matching your prompt today.")
+    + '<br/>' + (state.testMode ? '' : 'Check back tomorrow.')
+    + '<div class="feed-end-mark"></div>';
+  feedList.appendChild(end);
+}
+
+function updateFilterPill(){
+  var pill = $('filterPill');
+  var label = $('filterPillLabel');
+  var fab = $('debugFab');
+  var fabLabel = $('debugFabLabel');
+  if (state.testMode){
+    if (pill) pill.classList.add('is-debug');
+    if (label) label.textContent = 'All profiles';
+    if (fab) fab.classList.add('is-on');
+    if (fabLabel) fabLabel.textContent = 'Filter on';
+  } else {
+    if (pill) pill.classList.remove('is-debug');
+    if (label) label.textContent = 'Prompt active';
+    if (fab) fab.classList.remove('is-on');
+    if (fabLabel) fabLabel.textContent = 'Show all';
+  }
+}
+
+function filterPillClick(){
+  toast(state.testMode ? 'Showing all profiles, sorted by score' : 'Showing only > 70% prompt matches');
+}
+
+function heartSvg(){
+  return '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7-4.35-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.65-7 10-7 10z" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>';
+}
+
+/* =================================================================== */
+/*  LIKES YOU                                                            */
+/* =================================================================== */
+function renderLikesYou(){
+  var grid = $('likesGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  var cnt = $('likesCountLabel'); if (cnt) cnt.textContent = likesYou.length + ' new';
+  var b = $('likesBadge'); if (b) b.textContent = likesYou.length;
+
+  for (var i=0;i<likesYou.length;i++){
+    var entry = likesYou[i];
+    var p = null;
+    for (var pi=0; pi<profiles.length; pi++) if (profiles[pi].id === entry.profileId){ p = profiles[pi]; break; }
+    if (!p) continue;
+    var firstPhoto = null;
+    for (var ci=0; ci<p.cards.length; ci++) if (p.cards[ci].type === 'photo'){ firstPhoto = p.cards[ci]; break; }
+    var photoId = firstPhoto ? firstPhoto.photo : 1;
+
+    var ctx = entry.liked.type === 'prompt'
+      ? '<span class="label">Liked your prompt</span>"' + escHtml(entry.liked.text) + '"'
+      : '<span class="label">Liked your photo</span>' + escHtml(entry.liked.text);
+
+    var card = document.createElement('div');
+    card.className = 'like-card';
+    card.setAttribute('data-action', 'openLikeUser');
+    card.setAttribute('data-pid', p.id);
+    card.innerHTML = '<div class="photo-thumb ' + p.deck + ' photo-pattern">'
+      + '<div class="photo-art"><span class="label">' + escHtml(p.initial) + '</span></div>'
+      + '<img alt="" src="' + PRAVATAR(photoId) + '" />'
+      + '<span class="new-pill">New</span>'
+      + '<div class="name-line">' + escHtml(p.name) + '<span class="age">, ' + p.age + '</span></div>'
+      + '</div>'
+      + '<div class="like-context">' + ctx + '</div>';
+    grid.appendChild(card);
+  }
+  // wire image events
+  $$('.like-card img', grid).forEach(function(img){
+    img.onload = function(){ this.classList.add('loaded'); };
+    img.onerror = function(){ if (this.parentNode) this.parentNode.removeChild(this); };
+    if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+  });
+}
+
+function openLikeUser(arg){
+  var p = null;
+  for (var i=0;i<profiles.length;i++) if (profiles[i].id === arg){ p = profiles[i]; break; }
+  if (p) triggerMatch(p);
+}
+
+/* =================================================================== */
+/*  PROFILE TAB                                                          */
+/* =================================================================== */
+function renderProfile(){
+  var n = $('meName'); if (n) n.textContent = state.user.name;
+  var a = $('meAge');  if (a) a.textContent = state.user.age;
+  var j = $('meJob');  if (j) j.textContent = state.user.job;
+
+  var ta = $('userPrompt');
+  var readback = state.prompt || (ta ? ta.placeholder : '');
+  var extra = state.chips.length ? ' · ' + state.chips.join(' · ') : '';
+  var rb = $('promptReadback');
+  if (rb) rb.textContent = '"' + readback + '"' + extra;
+
+  var toggle = $('testModeToggle');
+  if (toggle) toggle.classList.toggle('on', state.testMode);
+
+  var scored = scoredProfiles();
+  var ps = $('poolSize'); if (ps) ps.textContent = scored.length;
+  var pm = $('poolMatched'); if (pm) pm.textContent = scored.filter(function(s){ return s.score > 70; }).length;
+}
+
+function toggleTestMode(){
+  state.testMode = !state.testMode;
+  if (state.currentTab === 'discover') renderFeed();
+  if (state.currentTab === 'profile') renderProfile();
+  toast(state.testMode ? 'Test mode on · all profiles' : 'Test mode off · filter applied');
+}
+
+function resetPrompt(){
+  var ta = $('userPrompt');
+  if (ta && state.prompt){
+    ta.value = state.prompt;
+    var cc = $('charCount'); if (cc) cc.textContent = state.prompt.length + ' / 280';
+  }
+  $$('#chips .chip').forEach(function(c){
+    c.classList.toggle('is-selected', state.chips.indexOf(c.textContent.trim()) >= 0);
+  });
+  state.likedSet = {};
+  goTo('onboarding');
+}
+
+/* =================================================================== */
+/*  LIKE + COMPOSER + MATCH                                              */
+/* =================================================================== */
+function likeCard(arg, el){
+  var pid = el.getAttribute('data-pid');
+  var ci = parseInt(el.getAttribute('data-ci'), 10);
+  if (isLiked(pid, ci)){
+    setLiked(pid, ci, false);
+    el.classList.remove('liked');
+    return;
+  }
+  state.pendingLike = { pid: pid, ci: ci, btn: el };
+  var c = $('composer');
+  if (c) c.classList.add('active');
+  var t = $('composerText');
+  if (t){ t.value = ''; setTimeout(function(){ t.focus(); }, 100); }
+}
+
+function closeComposer(){
+  var c = $('composer');
+  if (c) c.classList.remove('active');
+  state.pendingLike = null;
+}
+
+function sendLike(){
+  if (!state.pendingLike) return;
+  var p = state.pendingLike;
+  setLiked(p.pid, p.ci, true);
+  if (p.btn) p.btn.classList.add('liked');
+  var c = $('composer'); if (c) c.classList.remove('active');
+  if (p.btn && p.btn.animate){
+    p.btn.animate(
+      [{ transform:'scale(1)' },{ transform:'scale(1.3)' },{ transform:'scale(1)' }],
+      { duration: 320, easing: 'cubic-bezier(.22,1,.36,1)' }
+    );
+  }
+  var willMatch = Math.random() < 0.5;
+  var pid = p.pid;
+  if (willMatch){
+    var prof = null;
+    for (var i=0;i<profiles.length;i++) if (profiles[i].id === pid){ prof = profiles[i]; break; }
+    setTimeout(function(){ if (prof) triggerMatch(prof); }, 420);
+  } else {
+    setTimeout(function(){ toast("Like sent — you'll hear back if they like you too"); }, 320);
+  }
+  state.pendingLike = null;
+}
+
+function triggerMatch(p){
+  var nm = $('matchName'); if (nm) nm.textContent = p.name;
+  var fb = $('matchAvatarFallback'); if (fb) fb.textContent = p.initial;
+  var av = $('matchAvatar');
+  if (av){
+    av.className = 'avatar ' + p.deck;
+    var old = av.querySelector('img'); if (old) av.removeChild(old);
+    var firstPhoto = null;
+    for (var ci=0; ci<p.cards.length; ci++) if (p.cards[ci].type === 'photo'){ firstPhoto = p.cards[ci]; break; }
+    if (firstPhoto){
+      var img = document.createElement('img');
+      img.alt = '';
+      img.onload = function(){ this.classList.add('loaded'); };
+      img.onerror = function(){ if (this.parentNode) this.parentNode.removeChild(this); };
+      img.src = PRAVATAR(firstPhoto.photo);
+      av.appendChild(img);
+    }
+  }
+  var m = $('matchModal'); if (m) m.classList.add('active');
+}
+
+function closeMatch(){
+  var m = $('matchModal'); if (m) m.classList.remove('active');
+}
+
+/* =================================================================== */
+/*  TOAST                                                                */
+/* =================================================================== */
+var toastTimer = null;
+function toast(msg){
+  var el = $('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.opacity = '1';
+  el.style.transform = 'translate(-50%, 0)';
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){
+    el.style.opacity = '0';
+    el.style.transform = 'translate(-50%, 20px)';
+  }, 2000);
+}
+
+/* =================================================================== */
+/*  BOOTSTRAP                                                            */
+/* =================================================================== */
+function boot(){
+  bindGlobalClicks();
+  bindOnboarding();
+  bindSetup();
+  // me-card avatar load handlers (static images)
+  $$('#tab-profile .me-avatar img, #meModalAvatar img').forEach(function(img){
+    img.onload = function(){ this.classList.add('loaded'); };
+    img.onerror = function(){ if (this.parentNode) this.parentNode.removeChild(this); };
+    if (img.complete && img.naturalWidth > 0) img.classList.add('loaded');
+  });
+
+  // Flip status indicator to green
+  var s = $('js-status');
+  if (s) { s.textContent = 'JS ✓'; s.className = 'ok'; }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+</script>
+</body>
+</html>
